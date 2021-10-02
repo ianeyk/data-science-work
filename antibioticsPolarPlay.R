@@ -39,10 +39,10 @@ num_positive <-
   
 sequence_length <- length(unique(df_antibiotics_2$bacteria))
 first_sequence  <- c(1:(sequence_length%/%2))
-second_sequence <- c((sequence_length%/%2+1):sequence_length) 
-first_angles    <- c( 90 - 180/length(first_sequence) * first_sequence)
+second_sequence <- c((sequence_length%/%2+1):sequence_length)
+first_angles    <- c( 90 - 180/(length(first_sequence)) * first_sequence)
 second_angles   <- c(-90 - 180/length(second_sequence) * second_sequence)
-polar_angles    <- c(first_angles, second_angles) + 180 / sequence_length
+polar_angles    <- c(first_angles, second_angles) + 180 / (sequence_length)
 
 offset_factor <- 1000
 # offset_factor <- 1
@@ -95,8 +95,8 @@ p2 <- p1 +
     fill = "coral2"
   ) + 
   geom_rect(
-    xmin = 0, 
-    xmax = 1, 
+    xmin = -.5, 
+    xmax = .5, 
     ymin = log10(offset_factor) - 0.25, 
     ymax = 6, 
     fill = "bisque2"
@@ -110,7 +110,7 @@ p2 <- p1 +
   ) + 
   geom_text(
     data = tibble(
-      x = 1, 
+      x = 0, 
       y = c(1e1, 1e2, 1e3, 1e4, 1e5), 
       label = c("10", "1", "0.1", "0.01", "0.001")
     ), 
