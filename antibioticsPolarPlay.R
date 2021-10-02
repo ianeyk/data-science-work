@@ -24,6 +24,18 @@ df_antibiotics_3 <-
     id_num = group_indices(df_antibiotics_2, bacteria)
   )
 
+num_negative <- 
+  df_antibiotics_2 %>% 
+  filter(gram == "negative") %>% 
+  count(gram) %>% 
+  pull(n)
+
+num_positive <- 
+  df_antibiotics_2 %>% 
+  filter(gram == "positive") %>% 
+  count(gram) %>% 
+  pull(n) 
+
   
 sequence_length <- length(unique(df_antibiotics_2$bacteria))
 first_sequence  <- c(1:(sequence_length%/%2))
@@ -32,14 +44,17 @@ first_angles    <- c( 90 - 180/length(first_sequence) * first_sequence)
 second_angles   <- c(-90 - 180/length(second_sequence) * second_sequence)
 polar_angles    <- c(first_angles, second_angles) + 180 / sequence_length
 
-p1 <- p0 + 
+offset_factor <- 1000
+# offset_factor <- 1
+
+p1 <- 
   df_antibiotics_2 %>%
   arrange(gram) %>% 
   mutate(
-    max_effective_MIC = MIC * 10,
+    max_effective_MIC = offset_factor / (MIC * 10),
     id_num = group_indices(df_antibiotics_2, bacteria),
     bacteria = fct_reorder(bacteria, gram)
-  ) %>%
+  ) %>% 
   ggplot(
     mapping = aes(
       x = bacteria, 
@@ -65,34 +80,43 @@ p1 <- p0 +
   )
 p1
 
-num_negative <- 
-  df_antibiotics_2 %>% 
-  filter(gram == "negative") %>% 
-  count(gram) %>% 
-  pull(n)
-
-num_positive <- 
-  df_antibiotics_2 %>% 
-  filter(gram == "positive") %>% 
-  count(gram) %>% 
-  pull(n) 
-
 p2 <- p1 + 
   geom_rect(
-    xmin = 0.5, 
+    xmin = num_negative / 3 + 0.5, 
+    xmax = 49, 
+    ymin = log10(offset_factor) - 0.25, 
+    ymax = 6, 
+    fill = "cadetblue3") + 
+  geom_rect(
+    xmin = .5, 
     xmax = num_negative / 3 + 0.5, 
-    ymin = 0, 
-    ymax = 5, 
+    ymin = log10(offset_factor) - 0.25, 
+    ymax = 6, 
     fill = "coral2"
   ) + 
   geom_rect(
-    xmin = num_negative / 3 + 0.5, 
-    xmax = 48.5, 
-    ymin = 0, 
-    ymax = 5, 
-    fill = "cadetblue3") + 
-  scale_fill_manual(values = c("blue1", "brown4", "black")) + 
-  theme(panel.background = element_rect(fill = "bisque2"))
+    xmin = 0, 
+    xmax = 1, 
+    ymin = log10(offset_factor) - 0.25, 
+    ymax = 6, 
+    fill = "bisque2"
+  ) + 
+  scale_fill_manual(values = c("black", "blue1", "brown4")) + 
+  theme(panel.background = element_rect(fill = "bisque2")) + 
+  geom_hline(
+    yintercept = c(1, 1e1, 1e2, 1e3, 1e4, 1e5), 
+    linetype = "dotted", 
+    color = "white"
+  ) + 
+  geom_text(
+    data = tibble(
+      x = 1, 
+      y = c(1e1, 1e2, 1e3, 1e4, 1e5), 
+      label = c("10", "1", "0.1", "0.01", "0.001")
+    ), 
+    mapping = aes(x = x, y = y, label = label), 
+    inherit.aes = FALSE
+  )
 move_layers(p2, "GeomRect", position = "bottom")
 
 ggsave(
@@ -100,4 +124,6 @@ ggsave(
   width = 15, 
   height = 10
 )  
+
+
 
