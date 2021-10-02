@@ -102,7 +102,13 @@ p2 <- p1 +
     fill = "bisque2"
   ) + 
   scale_fill_manual(values = c("black", "blue1", "brown4")) + 
-  theme(panel.background = element_rect(fill = "bisque2")) + 
+  theme(
+    panel.background = element_rect(fill = "bisque2"), 
+    axis.text.y = element_blank(), 
+    axis.ticks.y = element_blank(), 
+    axis.title.y = element_blank(), 
+    axis.title.x = element_blank()
+  ) + 
   geom_hline(
     yintercept = c(1, 1e1, 1e2, 1e3, 1e4, 1e5), 
     linetype = "dotted", 
@@ -116,8 +122,8 @@ p2 <- p1 +
   geom_text(
     data = tibble(
       x = 0, 
-      y = c(1e1, 1e2, 1e3, 1e4, 1e5), 
-      label = c("10", "1", "0.1", "0.01", "0.001")
+      y = c(1e1, 1e2, 1e3, 1e4, 1e5, 1e6), 
+      label = c("10", "1", "0.1", "0.01", "0.001", "MIC")
     ), 
     mapping = aes(x = x, y = y, label = label), 
     inherit.aes = FALSE
@@ -128,7 +134,7 @@ ggsave(
   file = "C:/dev/git/data-science/data-science-work/test.svg", 
   width = 15, 
   height = 10
-)  
+)
 
 
 
