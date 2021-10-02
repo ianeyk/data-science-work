@@ -40,7 +40,7 @@ num_positive <-
 sequence_length <- length(unique(df_antibiotics_2$bacteria))
 first_sequence  <- c(1:(sequence_length%/%2))
 second_sequence <- c((sequence_length%/%2+1):sequence_length)
-first_angles    <- c( 90 - 180/(length(first_sequence)) * first_sequence)
+first_angles    <- c( 90 - 180/(length(first_sequence)) * (first_sequence + 9/16))
 second_angles   <- c(-90 - 180/length(second_sequence) * second_sequence)
 polar_angles    <- c(first_angles, second_angles) + 180 / (sequence_length)
 
@@ -107,6 +107,11 @@ p2 <- p1 +
     yintercept = c(1, 1e1, 1e2, 1e3, 1e4, 1e5), 
     linetype = "dotted", 
     color = "white"
+  ) + 
+  geom_vline(
+    xintercept = seq(1, 15) + 0.5, 
+    linetype = "dashed",
+    color = "black"
   ) + 
   geom_text(
     data = tibble(
