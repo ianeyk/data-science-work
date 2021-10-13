@@ -38,7 +38,7 @@ processState <- function(state1, nDiff) {
 # computes and returns the correlation between
 # two States' covid trends over time 
 # (neglecting the date of observations)
-corrNeighbor <- function(state1, state2) {
+corrStates <- function(state1, state2) {
   return <- 
     processState(state1, 1) %>% 
     inner_join(
@@ -52,7 +52,7 @@ corrNeighbor <- function(state1, state2) {
 
 # loops through every pair of neighboring states 
 # and calculates the correlation between them.
-corrNeighbors <- function(state, borders) {
+findNeigbors <- function(state, borders) {
   for (neighbor in borders) {
     print(paste(state, neighbor, sep = "+"))
   }
@@ -63,6 +63,6 @@ corrNeighbors <- function(state, borders) {
 for (row in 1:nrow(neighbors)) {
   state <- neighbors[row, "state"]
   borders <- neighbors[row, "borders"]
-  corrNeighbors(state, borders)
+  findNeigbors(state, borders)
 }
 
