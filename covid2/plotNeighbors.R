@@ -12,5 +12,3 @@ mycorr %>%
   ) %>% 
   ggplot(mapping = aes(x = date, y = cases, color= state)) +
   geom_point()
-
-  

@@ -34,18 +34,19 @@ processState <- function(state1, nDiff) {
     ungroup() %>% 
     distinct(date, state, .keep_all = TRUE) %>% 
     select(date, cases) %>% 
-    filter(!weekdays(date) %in% c("Saturday", "Sunday")) %>% 
     mutate(
-      cases = c(NA, diff(cases, lag = nDiff))
-    )
+      cases = c(rep(NA, nDiff), diff(cases, lag = nDiff))
+    ) %>% 
+    filter(!weekdays(date) %in% c("Saturday", "Sunday"))
 }
 
 # computes and returns the correlation between
 # two States' covid trends over time 
 # (neglecting the date of observations)
-corrStates <- function(state1, state2) {
+corrStates <- function(state1, state2, lagDays) {
+  print(paste(state1, state2, lagDays, sep = " + "))
   return <- 
-    processState(state1, 1) %>% 
+    processState(state1, lagDays) %>% 
     inner_join(
       processState(state2, 1), 
       by = c("date" = "date")
@@ -57,21 +58,43 @@ corrStates <- function(state1, state2) {
     .[2, 1] # select the 2, 1th element (the r value)
 }
 
+corrDiffs <- function(state1, state2) {
+  corrTibble <- 
+    tibble(
+      state = character(), 
+      neighbor = character(), 
+      corr = numeric(), 
+      lag = numeric()
+    )
+  for (lagDays in 1:100) {
+    corr <- corrStates(state1, state2, lagDays)
+    corrRow <- tibble(state = state1, neighbor = state2, corr = corr, lag = lagDays)
+    corrTibble <- corrTibble %>% bind_rows(corrRow)
+  }
+  return <- 
+    corrTibble
+}
+
 # loops through every pair of neighboring states 
 # and calculates the correlation between them.
 findNeighbors <- function(stateCorrs, state, borders) {
-  print(typeof(borders))
   for (neighbor in borders[[1]]) {
-    corr <- corrStates(state, neighbor)
-    print(corr)
-    stateCorr2 <- tibble(state = state, neighbor = neighbor, corr = corr)
+    # corr <- corrStates(state, neighbor)
+    # print(corr)
+    # stateCorr2 <- tibble(state = state, neighbor = neighbor, corr = corr)
+    stateCorr2 <- corrDiffs(state, neighbor)
     stateCorrs <- stateCorrs %>% bind_rows(stateCorr2)
   }
   return <- stateCorrs
 }
 
-stateCorrs <- tibble(state = character(), neighbor = character(), corr = numeric())
-
+stateCorrs <- 
+  tibble(
+    state = character(), 
+    neighbor = character(), 
+    corr = numeric(), 
+    lag = numeric()
+  )
 # loops through every state, finds neighboring states, 
 # and calculates the correlation between them.
 for (row in 1:nrow(neighbors)) {
@@ -80,3 +103,4 @@ for (row in 1:nrow(neighbors)) {
   stateCorrs <- findNeighbors(stateCorrs, state, borders)
 }
 
+save(stateCorrs, file = "stateCorrs_different_lags.RData")
