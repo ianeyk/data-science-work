@@ -18,7 +18,10 @@ neighbors <-
       str_split(", "), 
     .keep = "none"
   ) %>% 
-  filter(borders != "none")
+  filter(
+    borders != "none", 
+    !str_detect(borders, "water border")
+  )
 
 # process one State's data into new cases per day, 
 # summarizing by state, with a lag of nDiff = 1
@@ -31,6 +34,7 @@ processState <- function(state1, nDiff) {
     ungroup() %>% 
     distinct(date, state, .keep_all = TRUE) %>% 
     select(date, cases) %>% 
+    filter(!weekdays(date) %in% c("Saturday", "Sunday")) %>% 
     mutate(
       cases = c(NA, diff(cases, lag = nDiff))
     )
@@ -46,8 +50,9 @@ corrStates <- function(state1, state2) {
       processState(state2, 1), 
       by = c("date" = "date")
     ) %>% 
+    # print()
     # print() %>% 
-    select(!date) %>% 
+    select(!date) %>%
     cor(use = "complete.obs") %>%
     .[2, 1] # select the 2, 1th element (the r value)
 }
@@ -55,23 +60,17 @@ corrStates <- function(state1, state2) {
 # loops through every pair of neighboring states 
 # and calculates the correlation between them.
 findNeighbors <- function(stateCorrs, state, borders) {
-  for (neighbor in borders) {
+  print(typeof(borders))
+  for (neighbor in borders[[1]]) {
     corr <- corrStates(state, neighbor)
-    # stateCorrs %>% 
-    #   add_case(
-    #     state = state, 
-    #     neighbor = neighbor, 
-    #     corr = corr
-    #   )
+    print(corr)
     stateCorr2 <- tibble(state = state, neighbor = neighbor, corr = corr)
     stateCorrs <- stateCorrs %>% bind_rows(stateCorr2)
-    print(stateCorrs)
-    print(corr)
   }
   return <- stateCorrs
 }
 
-stateCorrs <- tibble(state = "", neighbor = "", corr = 0)
+stateCorrs <- tibble(state = character(), neighbor = character(), corr = numeric())
 
 # loops through every state, finds neighboring states, 
 # and calculates the correlation between them.
