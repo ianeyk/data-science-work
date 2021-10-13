@@ -1,6 +1,7 @@
 library(tidyverse)
 load("covid2/covid.RData")
 
+# initialize df_covid
 df_covid <- 
   df_covid %>% 
   mutate(
@@ -18,7 +19,9 @@ neighbors <-
     .keep = "none"
   )
 
-extractState <- function(state1, nDiff) {
+# process one State's data into new cases per day, 
+# summarizing by state, with a lag of nDiff = 1
+processState <- function(state1, nDiff) {
   return <- 
     df_covid %>% 
     filter(state == state1) %>% 
@@ -32,11 +35,14 @@ extractState <- function(state1, nDiff) {
     )
 }
 
+# computes and returns the correlation between
+# two States' covid trends over time 
+# (neglecting the date of observations)
 corrNeighbor <- function(state1, state2) {
   return <- 
-    extractState(state1, 1) %>% 
+    processState(state1, 1) %>% 
     inner_join(
-      extractState(state2, 1), 
+      processState(state2, 1), 
       by = c("date" = "date")
     ) %>% 
     select(!date) %>% 
@@ -44,12 +50,16 @@ corrNeighbor <- function(state1, state2) {
     .[2, 1] # select the 2, 1th element (the r value)
 }
 
+# loops through every pair of neighboring states 
+# and calculates the correlation between them.
 corrNeighbors <- function(state, borders) {
   for (neighbor in borders) {
     print(paste(state, neighbor, sep = "+"))
   }
 }
 
+# loops through every state, finds neighboring states, 
+# and calculates the correlation between them.
 for (row in 1:nrow(neighbors)) {
   state <- neighbors[row, "state"]
   borders <- neighbors[row, "borders"]
