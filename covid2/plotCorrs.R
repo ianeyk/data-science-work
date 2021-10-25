@@ -36,4 +36,10 @@ df_2 %>%
 
 df_2 %>%
   ggplot(mapping = aes(x = max_lag)) +
-  geom_histogram()
+  geom_histogram(binwidth = 1)
+
+df_2 %>% 
+  filter(state == "arkansas") %>% 
+  ungroup() %>% 
+  summarize(median = median(max_lag))
+
