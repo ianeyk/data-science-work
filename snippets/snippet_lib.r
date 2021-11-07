@@ -246,18 +246,17 @@ snippet bootstraps
 	bootstrap
 
 snippet bootstrap
-	${1:df} <- tibble(${2:x} = rnorm(50))
-	#
 	# Calculate summaries of each sub-sample
-	my_bootstraps <-
-		bootstraps(${1:df}, times = ${5:1000}) %>%
+	${1:df_sample}_bootstraps <-
+	${1:df_sample} %>%
+		bootstraps(times = 1000) %>%
 		mutate(
-		  ${1:df} = map(splits, analysis),
-		  estimates = map(
+		  ${1:df_sample} = map(splits, analysis),
+		  ${1:df_sample}_estimates = map(
 		    splits,
-		    function(${1:df}) {
-		      analysis(${1:df}) %>%
-		      pull(${2:x}) %>%
+		    function(${1:df_sample}) {
+		      analysis(${1:df_sample}) %>%
+		      pull(${2:var}) %>%
 		      fitdistr(densfun = "${3:normal}") %>%
 		      tidy()
 		    }
@@ -265,7 +264,7 @@ snippet bootstrap
 		)
 	#
 	# Display confidence intervals
-	int_pctl(my_bootstraps, estimates, alpha = ${4:0.05})
+	int_pctl(${1:df_sample}_bootstraps, ${1:df_sample}_estimates, alpha = ${4:0.05})
 
 snippet facet_wrap
 	facet_wrap(~${1:var_to_facet})
@@ -290,3 +289,31 @@ snippet theme
 		axis.title.y = element_blank(),
 		legend.title = element_blank(),
 	)
+
+snippet distr
+	fitdistr
+
+snippet fit_distr
+	fitdistr
+
+snippet fitdistr
+	library(MASS)
+
+	# Create distribution
+	${1:df_sample}_distr <-
+		${1:df_sample} %>%
+		pull(${2:var}) %>%
+		fitdistr("${3:normal}") %>%
+		tidy()
+	#
+	# Estimate confidence interval
+	${1:df_sample}_ci <-
+		tibble(
+	low = q${4:norm}(p = ${5:0.05} / 2, ${1:df_sample}_distr[[1, 2]], ${1:df_sample}_distr[[2, 2]]),
+	median = q${4:norm}(p = 0.5, ${1:df_sample}_distr[[1, 2]], ${1:df_sample}_distr[[2, 2]]),
+	high = q${4:norm}(p = 1 - ${5:0.05} / 2, ${1:df_sample}_distr[[1, 2]], ${1:df_sample}_distr[[2, 2]])
+		)
+	#
+	# Display results
+	${1:df_sample}_distr
+	${1:df_sample}_ci
