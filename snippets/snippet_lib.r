@@ -306,14 +306,41 @@ snippet fitdistr
 		fitdistr("${3:normal}") %>%
 		tidy()
 	#
+	# Estimate prediction interval
+	# For c_i, use [[1, 3]]; for p_i, use [[2, 2]] as the standard error
+	${1:df_sample}_pi <-
+		tibble(
+			low = q${4:norm}(p = ${5:0.05} / 2,
+				${1:df_sample}_distr[[1, 2]], ${1:df_sample}_distr[[2, 2]]),
+			median = q${4:norm}(p = 0.5,
+				${1:df_sample}_distr[[1, 2]], ${1:df_sample}_distr[[2, 2]]),
+			high = q${4:norm}(p = 1 - ${5:0.05} / 2,
+				${1:df_sample}_distr[[1, 2]], ${1:df_sample}_distr[[2, 2]])
+		)
+	#
 	# Estimate confidence interval
+	# For c_i, use [[1, 3]]; for p_i, use [[2, 2]] as the standard error
 	${1:df_sample}_ci <-
 		tibble(
-	low = q${4:norm}(p = ${5:0.05} / 2, ${1:df_sample}_distr[[1, 2]], ${1:df_sample}_distr[[2, 2]]),
-	median = q${4:norm}(p = 0.5, ${1:df_sample}_distr[[1, 2]], ${1:df_sample}_distr[[2, 2]]),
-	high = q${4:norm}(p = 1 - ${5:0.05} / 2, ${1:df_sample}_distr[[1, 2]], ${1:df_sample}_distr[[2, 2]])
+			low = q${4:norm}(p = ${5:0.05} / 2,
+				${1:df_sample}_distr[[1, 2]], ${1:df_sample}_distr[[1, 3]]),
+			median = q${4:norm}(p = 0.5,
+				${1:df_sample}_distr[[1, 2]], ${1:df_sample}_distr[[1, 3]]),
+			high = q${4:norm}(p = 1 - ${5:0.05} / 2,
+				${1:df_sample}_distr[[1, 2]], ${1:df_sample}_distr[[1, 3]])
 		)
 	#
 	# Display results
 	${1:df_sample}_distr
+	${1:df_sample}_pi
 	${1:df_sample}_ci
+
+snippet prediction_interval
+	#
+	# Estimate prediction interval
+	${1:df_sample}_pi <-
+		tibble(
+			low = q${4:norm}(p = ${5:0.05} / 2, ${1:df_sample}_distr[[1, 2]], ${1:df_sample}_distr[[2, 2]]),
+			median = q${4:norm}(p = 0.5, ${1:df_sample}_distr[[1, 2]], ${1:df_sample}_distr[[2, 2]]),
+			high = q${4:norm}(p = 1 - ${5:0.05} / 2, ${1:df_sample}_distr[[1, 2]], ${1:df_sample}_distr[[2, 2]])
+		)
